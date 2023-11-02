@@ -11,7 +11,7 @@ const updateUser = async (req, res) => {
     password: CryptoJS.RC4.encrypt(req.body.password, secritkey).toString(),
     profilePhoto: req.body.profilePhoto,
     coverPhoto: req.body.coverPhoto,
-    follower: req.body.follower,
+    followers: req.body.followers,
     following: req.body.following,
     des: req.body.des,
     city: req.body.city,
@@ -84,6 +84,67 @@ const DeleteUser = async (req, res) => {
     });
   }
 };
+// follow user
+const FollowUser =async(req, res) => {
+  // res.status(200).json({userid:});
+  if (req.body.userId !== req.params.id) {
+    try {
+      const user = await User.findById(req.params.id);
+      const currentUser = await User.findById(req.body.userId);
+      if (!user.followers.includes(req.body.userId)) {
+        await user.updateOne({ $push: { followers: req.body.userId } });
+        await currentUser.updateOne({
+          $push: {
+            following: req.params.id,
+          },
+        });
+        res.status(200).json("user has been followed");
+      }
+    } catch (err) {
+      res.status(404).json({
+        massage: "error",
+        err,
+      });
+    }
+  } else {
+    res.status(403).json("you cant follow yourself");
+  }
+};
+// unfollow user
+const UnfollowUser = async (req, res) => {
+  if (req.body.userId !== req.params.id) {
+    try {
+    console.log(1);
+
+      const user = await User.findById(req.params.id);
+      const currentUser = await User.findById(req.body.userId);
+      if (user.followers.includes(req.body.userId)) {
+    console.log(2);
+
+        await user.updateOne({ $pull: { followers: req.body.userId } });
+        await currentUser.updateOne({
+          $pull: {
+            following: req.params.id,
+          },
+        });
+        res.status(200).json("user has been unfollowed");
+      }else{
+    console.log("else");
+res.send("else")
+      }
+    } catch (err) {
+      res.status(404).json({
+        massage: "error",
+        err,
+      });
+    console.log("Error");
+
+    }
+  } else {
+    res.status(403).json("you cant follow yourself");
+  }
+};
+
 // forget password
 const forgetPassword = async (req, res) => {
   try {
@@ -108,6 +169,7 @@ const forgetPassword = async (req, res) => {
     });
   }
 };
+// change password with forgetpassword new password
 const NewPassword = async (req, res) => {
   const { id, token } = req.params;
   const { Password, ConfurmPassword } = req.body;
@@ -151,4 +213,6 @@ module.exports = {
   DeleteUser,
   forgetPassword,
   NewPassword,
+  FollowUser,
+  UnfollowUser
 };
