@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const postSchema = mongoose.Schema(
+const postSchema = new mongoose.Schema(
   {
     userId: {
       type: String,
@@ -11,7 +11,7 @@ const postSchema = mongoose.Schema(
       max: 500,
     },
     img: {
-      type: string,
+      type: String,
     },
     likes: {
       type: Array,
